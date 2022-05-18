@@ -4,4 +4,4 @@
 
 #include <gpd/gpd.h>
 
-std::shared_ptr<gpd::Client> _instance = nullptr;
+std::shared_ptr<gpd::Client> gpd::Client::_instance = nullptr;
