@@ -30,3 +30,6 @@
 *.exe
 *.out
 *.app
+/.clion.source.upload.marker
+/build/
+/.idea/
