@@ -110,14 +110,15 @@ class Client {
         fprintf(stderr, "buffer registration failed  %d\n", status.err);
         return cf_handle;
       }
+      _client_data_map.erase(cf_handle);
+      auto client_data = new ClientData();
+      client_data->_cf_descr = cf_descr;
+      client_data->_buffer_size = buffer_size;
+      client_data->_dev_ptr_offset = 0;
+      client_data->_device_ptr_base = dev_ptr_base;
+      _client_data_map.insert({cf_handle, client_data});
     }
-    _client_data_map.erase(cf_handle);
-    auto client_data = new ClientData();
-    client_data->_cf_descr = cf_descr;
-    client_data->_buffer_size = buffer_size;
-    client_data->_dev_ptr_offset = 0;
-    client_data->_device_ptr_base = dev_ptr_base;
-    _client_data_map.insert({cf_handle, client_data});
+    return cf_handle;
   }
 
   void* GetDeviceBuffer(CUfileHandle_t cf_handle) {
@@ -131,7 +132,7 @@ class Client {
 
   ssize_t Write(CUfileHandle_t cf_handle, size_t size, off_t file_offset) {
     auto iter = _client_data_map.find(cf_handle);
-    ssize_t ret = -1;
+    ssize_t ret = 0;
     if (iter != _client_data_map.end()) {
       off_t current_offset = 0;
       size_t num_pieces = ceil(size / iter->second->_buffer_size);
@@ -146,14 +147,16 @@ class Client {
       }
     }
     if (ret < 0 || ret != size) {
-      fprintf(stderr, "cuFileWrite failed  %d\n", ret);
+      fprintf(stderr, "cuFileWrite failed  %d should be %d\n", ret, size);
+    } else {
+      fprintf(stdout, "cuFileWrite success with bytes %d\n", ret);
     }
     return ret;
   }
 
   ssize_t Read(CUfileHandle_t cf_handle, size_t size, off_t file_offset) {
     auto iter = _client_data_map.find(cf_handle);
-    ssize_t ret = -1;
+    ssize_t ret = 0;
     if (iter != _client_data_map.end()) {
       off_t current_offset = 0;
       size_t num_pieces = ceil(size / iter->second->_buffer_size);
@@ -171,7 +174,9 @@ class Client {
       }
     }
     if (ret < 0 || ret != size) {
-      fprintf(stderr, "cuFileRead failed  %d\n", ret);
+      fprintf(stderr, "cuFileRead failed %d should be %d\n", ret, size);
+    } else {
+      fprintf(stdout, "cuFileRead success with bytes %d\n", ret);
     }
     return ret;
   }
@@ -183,19 +188,22 @@ class Client {
       CUfileError_t status =
           cuFileBufDeregister(iter->second->_device_ptr_base);
       if (status.err != CU_FILE_SUCCESS) {
+        fprintf(stderr, "buffer deregister failed\n");
         cudaFree(iter->second->_device_ptr_base);
         (void)cuFileHandleDeregister(cf_handle);
         close(iter->second->_cf_descr.handle.fd);
-        fprintf(stderr, "buffer deregister failed\n");
         return -1;
       }
       cudaFree(iter->second->_device_ptr_base);
       (void)cuFileHandleDeregister(cf_handle);
       close(iter->second->_cf_descr.handle.fd);
       delete (iter->second);
+      fprintf(stdout, "buffer deregister success\n");
     }
   }
-  ~Client() { (void)cuFileDriverClose(); }
+  void Finalize() {
+    (void)cuFileDriverClose();
+  }
 };
 }  // namespace gpd
 
