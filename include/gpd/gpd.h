@@ -149,7 +149,7 @@ class Client {
     if (ret < 0 || ret != size) {
       fprintf(stderr, "cuFileWrite failed  %d should be %d\n", ret, size);
     } else {
-      fprintf(stdout, "cuFileWrite success with bytes %d\n", ret);
+      //fprintf(stdout, "cuFileWrite success with bytes %d\n", ret);
     }
     return ret;
   }
@@ -176,7 +176,7 @@ class Client {
     if (ret < 0 || ret != size) {
       fprintf(stderr, "cuFileRead failed %d should be %d\n", ret, size);
     } else {
-      fprintf(stdout, "cuFileRead success with bytes %d\n", ret);
+      //fprintf(stdout, "cuFileRead success with bytes %d\n", ret);
     }
     return ret;
   }
@@ -198,8 +198,9 @@ class Client {
       (void)cuFileHandleDeregister(cf_handle);
       close(iter->second->_cf_descr.handle.fd);
       delete (iter->second);
-      fprintf(stdout, "buffer deregister success\n");
+      //fprintf(stdout, "buffer deregister success\n");
     }
+    return ret;
   }
   void Finalize() {
     (void)cuFileDriverClose();

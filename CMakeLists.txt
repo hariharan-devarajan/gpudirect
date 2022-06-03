@@ -5,7 +5,8 @@ if(NOT DEFINED ENV{pfs})
   message( FATAL_ERROR "Environment variable pfs is not defined. Exiting Cmake." )
 endif()
 enable_language(CUDA)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
+add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -rdynamic")
 find_package(CUDA REQUIRED)
@@ -20,8 +21,6 @@ set(GPD_SRC src/gpd/gpd.cpp)
 
 add_library(gpd SHARED ${GPD_PUBLIC_INCLUDE} ${GPD_PRIVATE_INCLUDE} ${GPD_SRC})
 
-
-
 #set(CMAKE_CXX_COMPILER ${CUDA_NVCC_EXECUTABLE})
 add_executable(gpudirect main.cpp)
 add_dependencies(gpudirect gpd)
@@ -32,9 +31,16 @@ if (BUILD_TEST)
     enable_testing()
 endif ()
 
-add_test(NAME gpudirect_sample COMMAND "${CMAKE_BINARY_DIR}/gpudirect")
-set_property(TEST gpudirect_sample APPEND PROPERTY ENVIRONMENT TESTFILE=$ENV{pfs}/gpudirect)
-set_property(TEST gpudirect_sample APPEND PROPERTY ENVIRONMENT LD_PRELOAD=${CUDA_TOOLKIT_ROOT_DIR}/lib64/libcufile.so)
+set(tss 1 4 64 1024 16384)
+set(nos 1 10 100)
+foreach(no ${nos})
+    foreach(ts ${tss})
+        add_test(NAME posix_${ts}_${no} COMMAND "${CMAKE_BINARY_DIR}/gpudirect" 0 $ENV{pfs}/gpudirect ${ts} ${no})
+        set_property(TEST posix_${ts}_${no} APPEND PROPERTY ENVIRONMENT LD_PRELOAD=${CUDA_TOOLKIT_ROOT_DIR}/lib64/libcufile.so)
+        add_test(NAME gpu_${ts}_${no} COMMAND "${CMAKE_BINARY_DIR}/gpudirect" 1 $ENV{pfs}/gpudirect ${ts} ${no})
+        set_property(TEST gpu_${ts}_${no} APPEND PROPERTY ENVIRONMENT LD_PRELOAD=${CUDA_TOOLKIT_ROOT_DIR}/lib64/libcufile.so)
+    endforeach()
+endforeach()
 
 
 function(print_directory_variables dir)
