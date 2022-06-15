@@ -24,7 +24,7 @@ add_library(gpd SHARED ${GPD_PUBLIC_INCLUDE} ${GPD_PRIVATE_INCLUDE} ${GPD_SRC})
 #set(CMAKE_CXX_COMPILER ${CUDA_NVCC_EXECUTABLE})
 add_executable(gpudirect main.cpp)
 add_dependencies(gpudirect gpd)
-target_link_libraries(gpudirect ${CUDA_LIBRARIES} -lcufile gpd -ldl -fPIC -rdynamic -lunwind -lunwind-x86_64 -ldw)
+target_link_libraries(gpudirect ${CUDA_LIBRARIES} -lcufile gpd -ldl -fPIC -rdynamic)
 
 option(BUILD_TEST "Build the unit tests" ON)
 if (BUILD_TEST)
