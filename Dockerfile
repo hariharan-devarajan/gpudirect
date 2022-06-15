@@ -53,9 +53,9 @@ RUN mkdir -p /usr/gpudirect/build /usr/exec
 WORKDIR /usr/gpudirect/build
 
 ENV LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda/lib64:/usr/local/cuda/lib64/stubs:/usr/local/cuda-11.4/compat/
-
+ENV pfs=/usr/exec 
 # This command compiles your app using GCC, adjust for your source code
-RUN pfs=/usr/exec cmake ../ && make -j
+RUN cmake ../ && make -j
 
 # This command runs your application, comment out this line to compile only
 CMD ["/bin/bash"]
