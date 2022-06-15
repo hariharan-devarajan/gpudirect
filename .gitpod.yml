@@ -4,6 +4,6 @@
 image:
   file: Dockerfile
 tasks:
-  - init: mkdir build && cd build && pfs=$PWD cmake ../
+  - init: mkdir build && cd build && pfs=/usr/exec cmake ../ && make -j
 
 
