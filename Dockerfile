@@ -8,6 +8,12 @@ FROM nvidia/cuda:11.4.2-devel-ubuntu20.04
 # These commands copy your files into the specified directory in the image
 # and set that as the working location
 
+COPY . /usr/gpudirect    
+
+RUN mkdir -p /usr/gpudirect/build /usr/exec 
+
+WORKDIR /usr/gpudirect/build
+
 RUN apt-get update -q --fix-missing && \
     apt-get install -yq gcc g++
 
@@ -45,12 +51,6 @@ RUN mkdir -p /etc/apt/keyrings && curl -fsSL https://download.docker.com/linux/u
 
 RUN apt-get update -q --fix-missing && \
     apt-get install -yq docker-ce docker-ce-cli containerd.io docker-compose-plugin
-
-COPY . /usr/gpudirect    
-
-RUN mkdir -p /usr/gpudirect/build /usr/exec 
-
-WORKDIR /usr/gpudirect/build
 
 ENV LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda/lib64:/usr/local/cuda/lib64/stubs:/usr/local/cuda-11.4/compat/
 ENV pfs=/usr/exec 
