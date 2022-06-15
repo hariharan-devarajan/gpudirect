@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  gpudirect:
+    image: gpudirect
+    build:
+      context: .
+      dockerfile: ./Dockerfile
